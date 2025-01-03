@@ -1,15 +1,27 @@
 package main
 
 import (
+	"asteroids/internal/constants"
+	"asteroids/internal/ship"
 	"fmt"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 const (
-	SCREEN_WIDTH  = 1280
-	SCREEN_HEIGHT = 960
+	SCREEN_HEIGHT = constants.SCREEN_HEIGHT
+	SCREEN_WIDTH  = constants.SCREEN_WIDTH
 )
+
+type GameState struct {
+	ship ship.Ship
+}
+
+func render(state *GameState) {
+}
+
+func update(state *GameState) {
+}
 
 func main() {
 	fmt.Println("Hello, World!")
@@ -18,6 +30,10 @@ func main() {
 	defer rl.CloseWindow()
 
 	rl.SetTargetFPS(120)
+
+	gameState := GameState{
+		ship.New(),
+	}
 
 	for !rl.WindowShouldClose() {
 		rl.BeginDrawing()
