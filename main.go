@@ -3,7 +3,6 @@ package main
 import (
 	"asteroids/internal/constants"
 	"asteroids/internal/ship"
-	"fmt"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -18,14 +17,13 @@ type GameState struct {
 }
 
 func render(state *GameState) {
+	ship.Draw(rl.Vector2{X: 0, Y: 0}, 38.0, 2.0, 0.0)
 }
 
 func update(state *GameState) {
 }
 
 func main() {
-	fmt.Println("Hello, World!")
-
 	rl.InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Asteroids 1979")
 	defer rl.CloseWindow()
 
@@ -39,13 +37,8 @@ func main() {
 		rl.BeginDrawing()
 
 		rl.ClearBackground(rl.Black)
-		rl.DrawText(
-			"Congrats! You created your first window!",
-			SCREEN_WIDTH/2,
-			SCREEN_HEIGHT/2,
-			18,
-			rl.RayWhite,
-		)
+
+		render(&gameState)
 
 		rl.EndDrawing()
 	}

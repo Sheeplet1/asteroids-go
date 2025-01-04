@@ -2,6 +2,7 @@ package ship
 
 import (
 	"asteroids/internal/constants"
+	"asteroids/internal/utils"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -22,8 +23,7 @@ func New() Ship {
 	}
 }
 
-// TODO: return value
-func Draw() {
+func Draw(pos rl.Vector2, scale float32, thickness float32, rotation float32) {
 	shipLines := []rl.Vector2{
 		{X: -0.4, Y: -0.5},
 		{X: 0.0, Y: 0.5},
@@ -32,8 +32,5 @@ func Draw() {
 		{X: -0.2, Y: -0.4},
 	}
 
-	// TODO: need to create the drawing function, not sure if scale is required
-	// here.
-
-	return
+	utils.DrawLines(pos, scale, thickness, rotation, shipLines)
 }
