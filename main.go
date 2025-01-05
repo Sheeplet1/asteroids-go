@@ -4,6 +4,7 @@ import (
 	"asteroids/internal/constants"
 	"asteroids/internal/entities"
 	"asteroids/internal/utils"
+	"fmt"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -39,10 +40,16 @@ func NewGameState() GameState {
 }
 
 func render(state *GameState) {
+	livesStr := fmt.Sprintf("Lives: %o", state.lives)
+	rl.DrawText(livesStr, SCREEN_WIDTH-16-rl.MeasureText(livesStr, 30), 20, 30, rl.RayWhite)
+
 	// If the ship is moving forward, then we draw thrusters onto the ship
 	// for the effect.
 	entities.RenderShip(&state.ship)
 
+	// ------------------------------------------------------------------------
+	// Asteroid rendering
+	// ------------------------------------------------------------------------
 	if state.asteroidTimer >= ASTEROID_SPAWN_INTERVAL {
 		// Creating a new asteroid to spawn in.
 		asteroid := entities.SpawnAsteroid(state.ship.Pos)
@@ -59,6 +66,7 @@ func render(state *GameState) {
 
 	// Increment the spawn timer for the asteroids.
 	state.asteroidTimer += rl.GetFrameTime()
+	// ------------------------------------------------------------------------
 
 	// If the game is over, render the game over screen.
 	if state.isGameOver {
@@ -103,7 +111,6 @@ func update(state *GameState) {
 		}
 	}
 
-	// TODO: Check for collisions with the ship and any asteroid.
 	for _, asteroid := range state.asteroids {
 		// If the asteroid hits the ship, then the ship dies and we introduce
 		// a 5 second death timer.
