@@ -46,7 +46,7 @@ func NewShip() Ship {
 }
 
 // Draws the base ship without thrusters.
-func DrawShip(pos rl.Vector2, scale float32, thickness float32, rotation float32) {
+func drawShip(pos rl.Vector2, scale float32, thickness float32, rotation float32) {
 	shipLines := []rl.Vector2{
 		{X: -0.4, Y: -0.5},
 		{X: 0.0, Y: 0.5},
@@ -58,7 +58,7 @@ func DrawShip(pos rl.Vector2, scale float32, thickness float32, rotation float32
 	utils.DrawLines(pos, scale, thickness, rotation, shipLines)
 }
 
-func DrawShipWithThrusters(pos rl.Vector2, scale float32, thickness float32, rotation float32) {
+func drawShipWithThrusters(pos rl.Vector2, scale float32, thickness float32, rotation float32) {
 	shipWithThrusters := []rl.Vector2{
 		{X: -0.4, Y: -0.5},
 		{X: 0.0, Y: 0.5},
@@ -124,4 +124,21 @@ func UpdateShip(ship *Ship) {
 	// will simply teleport the ship to the opposite side of where it was going.
 	ship.Pos.X = float32(math.Mod(float64(ship.Pos.X), float64(constants.SCREEN_WIDTH)))
 	ship.Pos.Y = float32(math.Mod(float64(ship.Pos.Y), float64(constants.SCREEN_HEIGHT)))
+}
+
+// Renders the ship based on whether its dead. The ship will render with thrusters
+// if the ship is moving forward.
+func RenderShip(ship *Ship) {
+	if !ship.IsDead() {
+		drawShip(
+			ship.Pos,
+			constants.SCALE,
+			constants.THICKNESS,
+			ship.Rot,
+		)
+
+		if rl.IsKeyDown(rl.KeyW) {
+			drawShipWithThrusters(ship.Pos, constants.SCALE, constants.THICKNESS, ship.Rot)
+		}
+	}
 }

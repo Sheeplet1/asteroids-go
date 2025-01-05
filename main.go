@@ -12,8 +12,8 @@ const (
 	SCREEN_WIDTH  = constants.SCREEN_WIDTH
 
 	// Default drawing parameters
-	THICKNESS = 2.0
-	SCALE     = 38.0
+	THICKNESS = constants.THICKNESS
+	SCALE     = constants.SCALE
 
 	// Default game parameters
 	ASTEROID_SPAWN_INTERVAL = 2.5 // Asteroids spawn every 2.5 seconds
@@ -36,18 +36,7 @@ func NewGameState() GameState {
 func render(state *GameState) {
 	// If the ship is moving forward, then we draw thrusters onto the ship
 	// for the effect.
-	if !state.ship.IsDead() {
-		entities.DrawShip(
-			state.ship.Pos,
-			SCALE,
-			THICKNESS,
-			state.ship.Rot,
-		)
-
-		if rl.IsKeyDown(rl.KeyW) {
-			entities.DrawShipWithThrusters(state.ship.Pos, SCALE, THICKNESS, state.ship.Rot)
-		}
-	}
+	entities.RenderShip(&state.ship)
 
 	if state.asteroidTimer >= ASTEROID_SPAWN_INTERVAL {
 		// Creating a new asteroid to spawn in.
