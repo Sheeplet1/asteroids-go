@@ -76,6 +76,11 @@ func update(state *GameState) {
 		state.ship.Pos,
 		rl.Vector2Multiply(state.ship.Vel, shipDirection),
 	)
+
+	// Handle out of bounds movements of the ship. The ship going out of bounds
+	// will simply teleport the ship to the opposite side of where it was going.
+	state.ship.Pos.X = float32(math.Mod(float64(state.ship.Pos.X), float64(SCREEN_WIDTH)))
+	state.ship.Pos.Y = float32(math.Mod(float64(state.ship.Pos.Y), float64(SCREEN_HEIGHT)))
 }
 
 func main() {
