@@ -3,6 +3,7 @@ package main
 import (
 	"asteroids/internal/constants"
 	"asteroids/internal/ship"
+	"math"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -30,7 +31,7 @@ type GameState struct {
 
 func render(state *GameState) {
 	ship.Draw(
-		rl.Vector2{X: SCREEN_WIDTH / 2, Y: SCREEN_HEIGHT / 2},
+		state.ship.Pos,
 		SCALE,
 		THICKNESS,
 		state.ship.Rot,
@@ -45,6 +46,36 @@ func update(state *GameState) {
 	if rl.IsKeyDown(rl.KeyD) {
 		state.ship.Rot += ROTATION_SPEED
 	}
+
+	// Handle forward and backward movements for the ship.
+	if rl.IsKeyDown(rl.KeyW) {
+		state.ship.Vel = rl.Vector2ClampValue(
+			rl.Vector2Scale(state.ship.Vel, 1.0+ACCEL),
+			MIN_VEL,
+			MAX_VEL,
+		)
+	}
+	if rl.IsKeyDown(rl.KeyS) {
+		state.ship.Vel = rl.Vector2ClampValue(
+			rl.Vector2Scale(state.ship.Vel, 1.0-DECEL),
+			0,
+			MAX_VEL,
+		)
+	}
+
+	// Calculate the ship's velocity after accounting for drag. Creates that
+	// floating through space feel.
+	state.ship.Vel = rl.Vector2Scale(state.ship.Vel, 1.0-DRAG)
+
+	// Updating the ship's position after accounting for all velocity changes.
+	shipDirection := rl.Vector2{
+		X: float32(-math.Sin(float64(state.ship.Rot))),
+		Y: float32(math.Cos(float64(state.ship.Rot))),
+	}
+	state.ship.Pos = rl.Vector2Add(
+		state.ship.Pos,
+		rl.Vector2Multiply(state.ship.Vel, shipDirection),
+	)
 }
 
 func main() {
