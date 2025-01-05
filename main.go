@@ -2,7 +2,7 @@ package main
 
 import (
 	"asteroids/internal/constants"
-	"asteroids/internal/ship"
+	"asteroids/internal/entities"
 	"math"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -26,16 +26,22 @@ const (
 )
 
 type GameState struct {
-	ship ship.Ship
+	ship entities.Ship
 }
 
 func render(state *GameState) {
-	ship.Draw(
-		state.ship.Pos,
-		SCALE,
-		THICKNESS,
-		state.ship.Rot,
-	)
+	// If the ship is moving forward, then we draw thrusters onto the ship
+	// for the effect.
+	if rl.IsKeyDown(rl.KeyW) {
+		entities.DrawShipWithThrusters(state.ship.Pos, SCALE, THICKNESS, state.ship.Rot)
+	} else {
+		entities.DrawShip(
+			state.ship.Pos,
+			SCALE,
+			THICKNESS,
+			state.ship.Rot,
+		)
+	}
 }
 
 func update(state *GameState) {
@@ -90,7 +96,7 @@ func main() {
 	rl.SetTargetFPS(120)
 
 	gameState := GameState{
-		ship.New(),
+		entities.NewShip(),
 	}
 
 	for !rl.WindowShouldClose() {

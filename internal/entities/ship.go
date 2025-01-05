@@ -1,4 +1,4 @@
-package ship
+package entities
 
 import (
 	"asteroids/internal/constants"
@@ -15,7 +15,7 @@ type Ship struct {
 
 // Initialises a new Ship struct. Position defaults to the middle of the window,
 // velocity defaults to 2 and rotation defaults to 0.0 which is facing upwards.
-func New() Ship {
+func NewShip() Ship {
 	return Ship{
 		Pos: rl.Vector2{X: constants.SCREEN_WIDTH / 2, Y: constants.SCREEN_HEIGHT / 2},
 		Vel: rl.Vector2{X: 2, Y: 2},
@@ -23,7 +23,8 @@ func New() Ship {
 	}
 }
 
-func Draw(pos rl.Vector2, scale float32, thickness float32, rotation float32) {
+// Draws the base ship without thrusters.
+func DrawShip(pos rl.Vector2, scale float32, thickness float32, rotation float32) {
 	shipLines := []rl.Vector2{
 		{X: -0.4, Y: -0.5},
 		{X: 0.0, Y: 0.5},
@@ -33,4 +34,22 @@ func Draw(pos rl.Vector2, scale float32, thickness float32, rotation float32) {
 	}
 
 	utils.DrawLines(pos, scale, thickness, rotation, shipLines)
+}
+
+func DrawShipWithThrusters(pos rl.Vector2, scale float32, thickness float32, rotation float32) {
+	shipWithThrusters := []rl.Vector2{
+		{X: -0.4, Y: -0.5},
+		{X: 0.0, Y: 0.5},
+		{X: 0.4, Y: -0.5},
+		{X: 0.2, Y: -0.4},
+
+		// Drawing the thrusters
+		{X: 0.0, Y: -0.8},
+		{X: -0.2, Y: -0.4},
+		{X: 0.2, Y: -0.4},
+		{X: -0.2, Y: -0.4},
+		{X: -0.4, Y: -0.5},
+	}
+
+	utils.DrawLines(pos, scale, thickness, rotation, shipWithThrusters)
 }

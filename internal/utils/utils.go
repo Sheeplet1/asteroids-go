@@ -1,8 +1,14 @@
 // Package which holds all of the utility functions used throughout the codebase.
 package utils
 
-import rl "github.com/gen2brain/raylib-go/raylib"
+import (
+	"math/rand/v2"
 
+	rl "github.com/gen2brain/raylib-go/raylib"
+)
+
+// Main utility function for drawing lines which is used for drawing the entities
+// of the game.
 func DrawLines(
 	origin rl.Vector2,
 	scale float32,
@@ -23,4 +29,9 @@ func DrawLines(
 			rl.RayWhite,
 		)
 	}
+}
+
+// Returns a float32 in range of [minimum, maximum].
+func RandInRange(minimum float32, maximum float32) float32 {
+	return minimum + rand.Float32()*(maximum-minimum)
 }
