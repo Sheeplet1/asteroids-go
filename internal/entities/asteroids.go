@@ -8,7 +8,10 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-const SPAWN_MARGIN = 100
+const (
+	SPAWN_MARGIN    = 100
+	ASTEROID_HITBOX = 25
+)
 
 type Asteroid struct {
 	Pos rl.Vector2
