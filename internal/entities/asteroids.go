@@ -23,7 +23,7 @@ type Asteroid struct {
 	// TODO: Add health
 }
 
-func NewAsteroid(pos rl.Vector2, dir rl.Vector2) Asteroid {
+func newAsteroid(pos rl.Vector2, dir rl.Vector2) Asteroid {
 	return Asteroid{
 		Pos: pos,
 		Vel: rl.Vector2{X: 2, Y: 2},
@@ -34,7 +34,7 @@ func NewAsteroid(pos rl.Vector2, dir rl.Vector2) Asteroid {
 // Generates spawn point coordinates for the asteroids. Spawn point coordinates
 // are contained to coordinates that are outside of the window dimensions. This
 // is so that the asteroids can spawn outside and float into view.
-func GenerateAsteroidSpawn() rl.Vector2 {
+func generateAsteroidSpawn() rl.Vector2 {
 	// Generate a random zone for the asteroid to spawn in.
 	zone := rand.IntN(4)
 
@@ -71,4 +71,16 @@ func GenerateAsteroidSpawn() rl.Vector2 {
 // Draws the asteroid at any given `pos`.
 func DrawAsteroid(pos rl.Vector2) {
 	rl.DrawCircleLinesV(pos, 25, rl.RayWhite)
+}
+
+// Spawns an asteroid and returns the Asteroid struct to be appended into the
+// game state. Takes in the ship's position as the asteroid drifts towards
+// the ship when it spawns.
+func SpawnAsteroid(shipPos rl.Vector2) Asteroid {
+	spawnPoint := generateAsteroidSpawn()
+	asteroid := newAsteroid(
+		spawnPoint,
+		rl.Vector2Normalize(rl.Vector2Subtract(shipPos, spawnPoint)),
+	)
+	return asteroid
 }

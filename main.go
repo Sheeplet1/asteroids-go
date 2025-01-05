@@ -3,6 +3,7 @@ package main
 import (
 	"asteroids/internal/constants"
 	"asteroids/internal/entities"
+	"asteroids/internal/utils"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -16,13 +17,15 @@ const (
 	SCALE     = constants.SCALE
 
 	// Default game parameters
-	ASTEROID_SPAWN_INTERVAL = 2.5 // Asteroids spawn every 2.5 seconds
+	ASTEROID_SPAWN_INTERVAL = constants.ASTEROID_SPAWN_INTERVAL
 )
 
 type GameState struct {
 	ship          entities.Ship
 	asteroids     []entities.Asteroid // Slice of asteroids present in the game.
 	asteroidTimer float32             // The spawn timer for the asteroids.
+	lives         uint8
+	isGameOver    bool
 }
 
 func NewGameState() GameState {
@@ -30,6 +33,8 @@ func NewGameState() GameState {
 		ship:          entities.NewShip(),
 		asteroids:     []entities.Asteroid{},
 		asteroidTimer: 0,
+		lives:         3,
+		isGameOver:    false,
 	}
 }
 
@@ -40,11 +45,7 @@ func render(state *GameState) {
 
 	if state.asteroidTimer >= ASTEROID_SPAWN_INTERVAL {
 		// Creating a new asteroid to spawn in.
-		spawnPoint := entities.GenerateAsteroidSpawn()
-		asteroid := entities.NewAsteroid(
-			spawnPoint,
-			rl.Vector2Normalize(rl.Vector2Subtract(state.ship.Pos, spawnPoint)),
-		)
+		asteroid := entities.SpawnAsteroid(state.ship.Pos)
 
 		// Add new asteroid into the game state.
 		state.asteroids = append(state.asteroids, asteroid)
@@ -58,9 +59,22 @@ func render(state *GameState) {
 
 	// Increment the spawn timer for the asteroids.
 	state.asteroidTimer += rl.GetFrameTime()
+
+	// If the game is over, render the game over screen.
+	if state.isGameOver {
+		utils.DrawGameOverScreen()
+	}
 }
 
 func update(state *GameState) {
+	if state.isGameOver {
+		if rl.IsKeyPressed(rl.KeyEnter) {
+			*state = NewGameState()
+		}
+		return
+	}
+
+	// Updates the ship based on movement or death.
 	entities.UpdateShip(&state.ship)
 
 	// Update any asteroid's positions.
@@ -100,12 +114,18 @@ func update(state *GameState) {
 			entities.ASTEROID_HITBOX,
 		) && !state.ship.IsDead() {
 			state.ship.DeathTimer += 5
-			state.ship.Lives -= 1
+			state.lives -= 1
 		}
 	}
 
+	// Updating the death timer of the ship.
 	if state.ship.DeathTimer > 0 {
 		state.ship.DeathTimer -= rl.GetFrameTime()
+	}
+
+	// If there is no more lives left, set the game state to be over.
+	if state.lives <= 0 {
+		state.isGameOver = true
 	}
 }
 
@@ -121,7 +141,6 @@ func main() {
 		update(&gameState)
 
 		rl.BeginDrawing()
-
 		rl.ClearBackground(rl.Black)
 
 		render(&gameState)

@@ -25,7 +25,6 @@ type Ship struct {
 	Vel        rl.Vector2 // Initial velocity of the ship
 	Rot        float32    // Rotation angle of the ship
 	DeathTimer float32    // Death timer for the ship
-	Lives      int8
 }
 
 // Returns true/false whether the ship is dead or not.
@@ -41,7 +40,6 @@ func NewShip() Ship {
 		Vel:        rl.Vector2{X: 2, Y: 2},
 		Rot:        0,
 		DeathTimer: 0,
-		Lives:      3,
 	}
 }
 

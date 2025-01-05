@@ -2,6 +2,7 @@
 package utils
 
 import (
+	"asteroids/internal/constants"
 	"math/rand/v2"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -34,4 +35,21 @@ func DrawLines(
 // Returns a float32 in range of [minimum, maximum].
 func RandInRange(minimum float32, maximum float32) float32 {
 	return minimum + rand.Float32()*(maximum-minimum)
+}
+
+func DrawGameOverScreen() {
+	rl.DrawText(
+		"GAME OVER",
+		constants.SCREEN_WIDTH/2-rl.MeasureText("GAME OVER", 40)/2,
+		constants.SCREEN_HEIGHT/2-20,
+		40,
+		rl.Red,
+	)
+	rl.DrawText(
+		"Press ENTER to Restart",
+		constants.SCREEN_WIDTH/2-rl.MeasureText("Press ENTER to Restart", 20)/2,
+		constants.SCREEN_HEIGHT/2+30,
+		20,
+		rl.RayWhite,
+	)
 }
