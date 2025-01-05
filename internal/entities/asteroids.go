@@ -8,19 +8,39 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
+const SPAWN_MARGIN = 100
+
+type Asteroid struct {
+	Pos rl.Vector2
+	Vel rl.Vector2
+	Dir rl.Vector2 // This will point towards the ship's location when it first spawned.
+	// TODO: Store the coordinates that make the polygon of the asteroid
+	// in order to redraw it.
+
+	// TODO: Add health
+}
+
+func NewAsteroid(pos rl.Vector2, dir rl.Vector2) Asteroid {
+	return Asteroid{
+		Pos: pos,
+		Vel: rl.Vector2{X: 2, Y: 2},
+		Dir: dir,
+	}
+}
+
 // Generates spawn point coordinates for the asteroids. Spawn point coordinates
 // are contained to coordinates that are outside of the window dimensions. This
 // is so that the asteroids can spawn outside and float into view.
 func GenerateAsteroidSpawn() rl.Vector2 {
+	// Generate a random zone for the asteroid to spawn in.
 	zone := rand.IntN(4)
 
 	const (
 		// Defining zones for the asteroids to spawn in.
-		TOP          = 0
-		BOT          = 1
-		LEFT         = 2
-		RIGHT        = 3
-		SPAWN_MARGIN = 100
+		TOP   = 0
+		BOT   = 1
+		LEFT  = 2
+		RIGHT = 3
 	)
 
 	switch zone {
@@ -47,5 +67,5 @@ func GenerateAsteroidSpawn() rl.Vector2 {
 
 // Draws the asteroid at any given `pos`.
 func DrawAsteroid(pos rl.Vector2) {
-	rl.DrawCircleV(pos, 9, rl.RayWhite)
+	rl.DrawCircleLinesV(pos, 25, rl.RayWhite)
 }

@@ -23,10 +23,23 @@ const (
 	MIN_VEL        = 2.0
 	MAX_VEL        = 6.0
 	DRAG           = 0.01
+
+	// Default game parameters
+	ASTEROID_SPAWN_INTERVAL = 2.5 // Asteroids spawn every 2.5 seconds
 )
 
 type GameState struct {
-	ship entities.Ship
+	ship          entities.Ship
+	asteroids     []entities.Asteroid // Slice of asteroids present in the game.
+	asteroidTimer float32             // The spawn timer for the asteroids.
+}
+
+func NewGameState() GameState {
+	return GameState{
+		ship:          entities.NewShip(),
+		asteroids:     []entities.Asteroid{},
+		asteroidTimer: 0,
+	}
 }
 
 func render(state *GameState) {
@@ -42,6 +55,27 @@ func render(state *GameState) {
 			state.ship.Rot,
 		)
 	}
+
+	if state.asteroidTimer >= ASTEROID_SPAWN_INTERVAL {
+		// Creating a new asteroid to spawn in.
+		spawnPoint := entities.GenerateAsteroidSpawn()
+		asteroid := entities.NewAsteroid(
+			spawnPoint,
+			rl.Vector2Normalize(rl.Vector2Subtract(state.ship.Pos, spawnPoint)),
+		)
+
+		// Add new asteroid into the game state.
+		state.asteroids = append(state.asteroids, asteroid)
+		state.asteroidTimer = 0
+	}
+
+	// Render any asteroids that are already in the game.
+	for _, asteroid := range state.asteroids {
+		entities.DrawAsteroid(asteroid.Pos)
+	}
+
+	// Increment the spawn timer for the asteroids.
+	state.asteroidTimer += rl.GetFrameTime()
 }
 
 func update(state *GameState) {
@@ -87,6 +121,32 @@ func update(state *GameState) {
 	// will simply teleport the ship to the opposite side of where it was going.
 	state.ship.Pos.X = float32(math.Mod(float64(state.ship.Pos.X), float64(SCREEN_WIDTH)))
 	state.ship.Pos.Y = float32(math.Mod(float64(state.ship.Pos.Y), float64(SCREEN_HEIGHT)))
+
+	// Update any asteroid's positions.
+	if len(state.asteroids) > 0 {
+		for i := range state.asteroids {
+			state.asteroids[i].Pos = rl.Vector2Add(
+				state.asteroids[i].Pos,
+				rl.Vector2Multiply(state.asteroids[i].Vel, state.asteroids[i].Dir),
+			)
+		}
+
+		for i := len(state.asteroids) - 1; i >= 0; i-- {
+			// PERF: Could have some performance optimisations here but not
+			// needed due to the size of the game.
+
+			// If the asteroid moves out of the window dimensions, we remove it
+			// from the game.
+			if state.asteroids[i].Pos.X > SCREEN_WIDTH+entities.SPAWN_MARGIN ||
+				state.asteroids[i].Pos.X < -entities.SPAWN_MARGIN {
+				state.asteroids = append(state.asteroids[:i], state.asteroids[i+1:]...)
+			}
+			if state.asteroids[i].Pos.Y > SCREEN_HEIGHT+entities.SPAWN_MARGIN ||
+				state.asteroids[i].Pos.Y < -entities.SPAWN_MARGIN {
+				state.asteroids = append(state.asteroids[:i], state.asteroids[i+1:]...)
+			}
+		}
+	}
 }
 
 func main() {
@@ -95,9 +155,7 @@ func main() {
 
 	rl.SetTargetFPS(120)
 
-	gameState := GameState{
-		entities.NewShip(),
-	}
+	gameState := NewGameState()
 
 	for !rl.WindowShouldClose() {
 		update(&gameState)
