@@ -25,6 +25,8 @@ type GameState struct {
 	ship          entities.Ship
 	asteroids     []entities.Asteroid // Slice of asteroids present in the game.
 	asteroidTimer float32             // The spawn timer for the asteroids.
+	bullets       []entities.Bullet
+	bulletTimer   float32
 	lives         uint8
 	isGameOver    bool
 }
@@ -34,18 +36,37 @@ func NewGameState() GameState {
 		ship:          entities.NewShip(),
 		asteroids:     []entities.Asteroid{},
 		asteroidTimer: 0,
+		bullets:       []entities.Bullet{},
+		bulletTimer:   0,
 		lives:         3,
 		isGameOver:    false,
 	}
 }
 
 func render(state *GameState) {
+	// Renders the lives counter in the top right of the window.
 	livesStr := fmt.Sprintf("Lives: %o", state.lives)
 	rl.DrawText(livesStr, SCREEN_WIDTH-16-rl.MeasureText(livesStr, 30), 20, 30, rl.RayWhite)
 
 	// If the ship is moving forward, then we draw thrusters onto the ship
 	// for the effect.
 	entities.RenderShip(&state.ship)
+
+	// ------------------------------------------------------------------------
+	// Bullet rendering
+	// ------------------------------------------------------------------------
+	if rl.IsKeyDown(rl.KeySpace) && state.bulletTimer <= 0 {
+		bullet := entities.NewBullet(state.ship.Pos, state.ship.Rot)
+		fmt.Println(bullet)
+		entities.DrawBullet(bullet)
+		state.bullets = append(state.bullets, bullet)
+		state.bulletTimer = 1
+	}
+
+	for _, bullet := range state.bullets {
+		entities.DrawBullet(bullet)
+	}
+	// ------------------------------------------------------------------------
 
 	// ------------------------------------------------------------------------
 	// Asteroid rendering
@@ -63,10 +84,11 @@ func render(state *GameState) {
 	for _, asteroid := range state.asteroids {
 		entities.DrawAsteroid(asteroid)
 	}
-
-	// Increment the spawn timer for the asteroids.
-	state.asteroidTimer += rl.GetFrameTime()
 	// ------------------------------------------------------------------------
+
+	// Increment/decrement timers.
+	state.asteroidTimer += rl.GetFrameTime()
+	state.bulletTimer -= rl.GetFrameTime()
 
 	// If the game is over, render the game over screen.
 	if state.isGameOver {
@@ -121,6 +143,36 @@ func checkForShipAsteroidCollisions(state *GameState) {
 	}
 }
 
+// Update all bullets positions.
+func updateBulletPositions(state *GameState) {
+	if len(state.bullets) > 0 {
+		// Update bullet start and ending position.
+		for i := range state.bullets {
+			state.bullets[i].Start = rl.Vector2Add(
+				state.bullets[i].Start,
+				rl.Vector2Multiply(state.bullets[i].Vel, state.bullets[i].Dir),
+			)
+
+			state.bullets[i].End = rl.Vector2Add(
+				state.bullets[i].Start,
+				rl.Vector2Scale(state.bullets[i].Dir, constants.BULLET_LENGTH),
+			)
+		}
+
+		// Remove any bullets that go out of bounds.
+		for i := len(state.bullets) - 1; i >= 0; i-- {
+			if state.bullets[i].Start.X > SCREEN_WIDTH+entities.SPAWN_MARGIN ||
+				state.bullets[i].Start.X < -entities.SPAWN_MARGIN {
+				state.bullets = append(state.bullets[:i], state.bullets[i+1:]...)
+			}
+			if state.bullets[i].Start.Y > SCREEN_HEIGHT+entities.SPAWN_MARGIN ||
+				state.bullets[i].Start.Y < -entities.SPAWN_MARGIN {
+				state.bullets = append(state.bullets[:i], state.bullets[i+1:]...)
+			}
+		}
+	}
+}
+
 func update(state *GameState) {
 	if state.isGameOver {
 		if rl.IsKeyPressed(rl.KeyEnter) {
@@ -132,8 +184,9 @@ func update(state *GameState) {
 	// Updates the ship based on movement or death.
 	entities.UpdateShip(&state.ship)
 
-	// Update any asteroid's positions.
+	// Update foreign entities positions.
 	updateAsteroidPositions(state)
+	updateBulletPositions(state)
 
 	// Check for any asteroid and ship collisions. If there is any collision,
 	// the ship dies and overall life count reduces by 1.
