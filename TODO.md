@@ -2,7 +2,7 @@
 
 - [x] collision detection
 - [x] game over screen and lives
-- generate random polygon for asteroid shape
+- [x] generate random polygon for asteroid shape
 - add different sizings for the asteroids, different sizes should return
   different scores
 - ship can shoot bullets
