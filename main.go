@@ -74,18 +74,9 @@ func render(state *GameState) {
 	}
 }
 
-func update(state *GameState) {
-	if state.isGameOver {
-		if rl.IsKeyPressed(rl.KeyEnter) {
-			*state = NewGameState()
-		}
-		return
-	}
-
-	// Updates the ship based on movement or death.
-	entities.UpdateShip(&state.ship)
-
-	// Update any asteroid's positions.
+// Iterates through the existing asteroids in the game and updates their positions
+// based on their velocity and direction.
+func updateAsteroidPositions(state *GameState) {
 	if len(state.asteroids) > 0 {
 		for i := range state.asteroids {
 			state.asteroids[i].Pos = rl.Vector2Add(
@@ -110,7 +101,11 @@ func update(state *GameState) {
 			}
 		}
 	}
+}
 
+// The ship and asteroid have circular hitboxes which we check for any collisions
+// between them.
+func checkForShipAsteroidCollisions(state *GameState) {
 	for _, asteroid := range state.asteroids {
 		// If the asteroid hits the ship, then the ship dies and we introduce
 		// a 5 second death timer.
@@ -124,6 +119,25 @@ func update(state *GameState) {
 			state.lives -= 1
 		}
 	}
+}
+
+func update(state *GameState) {
+	if state.isGameOver {
+		if rl.IsKeyPressed(rl.KeyEnter) {
+			*state = NewGameState()
+		}
+		return
+	}
+
+	// Updates the ship based on movement or death.
+	entities.UpdateShip(&state.ship)
+
+	// Update any asteroid's positions.
+	updateAsteroidPositions(state)
+
+	// Check for any asteroid and ship collisions. If there is any collision,
+	// the ship dies and overall life count reduces by 1.
+	checkForShipAsteroidCollisions(state)
 
 	// Updating the death timer of the ship.
 	if state.ship.DeathTimer > 0 {
