@@ -61,7 +61,7 @@ func render(state *GameState) {
 
 	// Render any asteroids that are already in the game.
 	for _, asteroid := range state.asteroids {
-		entities.DrawAsteroid(asteroid.Pos)
+		entities.DrawAsteroid(asteroid)
 	}
 
 	// Increment the spawn timer for the asteroids.
