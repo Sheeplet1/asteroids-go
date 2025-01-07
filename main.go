@@ -113,7 +113,7 @@ func checkForShipAsteroidCollisions(state *GameState) {
 			state.ship.Pos,
 			entities.SHIP_HITBOX_RADIUS,
 			asteroid.Pos,
-			entities.ASTEROID_HITBOX,
+			float32(asteroid.Hitbox),
 		) && !state.ship.IsDead() {
 			state.ship.DeathTimer += 5
 			state.lives -= 1

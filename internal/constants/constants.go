@@ -9,4 +9,5 @@ const (
 	SCALE     = 38.0
 
 	ASTEROID_SPAWN_INTERVAL = 2.5 // Asteroids spawn every 2.5 seconds
+	SPAWN_MARGIN            = 100
 )

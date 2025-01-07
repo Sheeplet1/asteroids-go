@@ -10,16 +10,27 @@ import (
 )
 
 const (
-	SPAWN_MARGIN    = 100
-	ASTEROID_HITBOX = 25
+	SPAWN_MARGIN = constants.SPAWN_MARGIN
+	SMALL_HITBOX = 10
+	MED_HITBOX   = 25
+	LARGE_HITBOX = 40
+)
+
+type AsteroidSize int
+
+const (
+	Small AsteroidSize = iota
+	Medium
+	Large
 )
 
 type Asteroid struct {
 	Pos    rl.Vector2
 	Vel    rl.Vector2
-	Dir    rl.Vector2 // This will point towards the ship's location when it first spawned.
-	Points []rl.Vector2
-
+	Dir    rl.Vector2   // This will point towards the ship's location when it first spawned.
+	Points []rl.Vector2 // Points which generate the asteroid's shape.
+	Size   AsteroidSize
+	Hitbox int // Radius of the hitbox of the asteroid. Hitbox is in the shape of a circle.
 	// TODO: Add health
 }
 
@@ -55,16 +66,38 @@ func generateAsteroidShape(
 	return points
 }
 
-func newAsteroid(pos rl.Vector2, dir rl.Vector2) Asteroid {
+func newAsteroid(pos rl.Vector2, dir rl.Vector2, size AsteroidSize) Asteroid {
+	var minRadius, maxRadius float64
+	var velocity rl.Vector2
+	var hitbox int
+
+	// Defining variables based on the size of the asteroid. Larger asteroids
+	// will have more health but less speed etc.
+	switch size {
+	case Small:
+		minRadius, maxRadius = 0, 0.5
+		velocity = rl.Vector2{X: 3, Y: 3}
+		hitbox = SMALL_HITBOX
+	case Medium:
+		minRadius, maxRadius = 0.5, 1
+		velocity = rl.Vector2{X: 2, Y: 2}
+		hitbox = MED_HITBOX
+	case Large:
+		minRadius, maxRadius = 1, 1.5
+		velocity = rl.Vector2{X: 1, Y: 1}
+		hitbox = LARGE_HITBOX
+	}
+
 	// Generates points for the polygon shape of the asteroid.
 	const DEFAULT_NUM_SIDES = 11
-	points := generateAsteroidShape(DEFAULT_NUM_SIDES, 0.5, 1)
+	points := generateAsteroidShape(DEFAULT_NUM_SIDES, minRadius, maxRadius)
 
 	return Asteroid{
 		Pos:    pos,
-		Vel:    rl.Vector2{X: 2, Y: 2},
+		Vel:    velocity,
 		Dir:    dir,
 		Points: points,
+		Hitbox: hitbox,
 	}
 }
 
@@ -107,6 +140,7 @@ func generateAsteroidSpawn() rl.Vector2 {
 
 // Draws the asteroid at any given `pos`.
 func DrawAsteroid(asteroid Asteroid) {
+	rl.DrawCircleLinesV(asteroid.Pos, float32(asteroid.Hitbox), rl.Yellow)
 	utils.DrawLines(asteroid.Pos, constants.SCALE, constants.THICKNESS, 0.0, asteroid.Points)
 }
 
@@ -115,9 +149,21 @@ func DrawAsteroid(asteroid Asteroid) {
 // the ship when it spawns.
 func SpawnAsteroid(shipPos rl.Vector2) Asteroid {
 	spawnPoint := generateAsteroidSpawn()
+
+	// Randomly generate a size for the asteroid.
+	// 40% chance for large, 40% chance for medium, 20% chance for small.
+	size := Large
+	if rand.Float64() < 0.4 {
+		size = Medium
+	} else if rand.Float64() < 0.2 {
+		size = Small
+	}
+
 	asteroid := newAsteroid(
 		spawnPoint,
 		rl.Vector2Normalize(rl.Vector2Subtract(shipPos, spawnPoint)),
+		size,
 	)
+
 	return asteroid
 }
