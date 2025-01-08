@@ -48,6 +48,18 @@ func render(state *GameState) {
 	livesStr := fmt.Sprintf("Lives: %o", state.lives)
 	rl.DrawText(livesStr, SCREEN_WIDTH-16-rl.MeasureText(livesStr, 30), 20, 30, rl.RayWhite)
 
+	// Renders the death timer of the ship in the middle of the screen.
+	if state.ship.IsDead() {
+		deathStr := fmt.Sprintf("Respawning in %.0f", state.ship.DeathTimer)
+		rl.DrawText(
+			deathStr,
+			SCREEN_WIDTH/2-rl.MeasureText(deathStr, 30)/2,
+			SCREEN_HEIGHT/2,
+			30,
+			rl.RayWhite,
+		)
+	}
+
 	// If the ship is moving forward, then we draw thrusters onto the ship
 	// for the effect.
 	entities.RenderShip(&state.ship)
@@ -173,6 +185,24 @@ func updateBulletPositions(state *GameState) {
 	}
 }
 
+// Check for collisions between the bullets and asteroids.
+func checkForBulletAsteroidCollisions(state *GameState) {
+	for j := len(state.bullets) - 1; j >= 0; j-- {
+		for i := len(state.asteroids) - 1; i >= 0; i-- {
+			if rl.CheckCollisionCircleLine(
+				state.asteroids[i].Pos,
+				float32(state.asteroids[i].Hitbox),
+				state.bullets[j].Start,
+				state.bullets[j].End,
+			) {
+				state.asteroids = append(state.asteroids[:i], state.asteroids[i+1:]...)
+				// FIX: Bug here where there can be a crash from accessing an invalid index.
+				state.bullets = append(state.bullets[:j], state.bullets[j+1:]...)
+			}
+		}
+	}
+}
+
 func update(state *GameState) {
 	if state.isGameOver {
 		if rl.IsKeyPressed(rl.KeyEnter) {
@@ -188,9 +218,9 @@ func update(state *GameState) {
 	updateAsteroidPositions(state)
 	updateBulletPositions(state)
 
-	// Check for any asteroid and ship collisions. If there is any collision,
-	// the ship dies and overall life count reduces by 1.
+	// Check for any entity collisions.
 	checkForShipAsteroidCollisions(state)
+	checkForBulletAsteroidCollisions(state)
 
 	// Updating the death timer of the ship.
 	if state.ship.DeathTimer > 0 {
