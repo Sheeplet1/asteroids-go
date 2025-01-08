@@ -187,12 +187,39 @@ func updateBulletPositions(state *GameState) {
 	}
 }
 
+// Check for collisions between existing bullets and asteroids.
+// NOTE: Could hold some runtime bugs here.
 func checkForBulletAsteroidCollisions(state *GameState) {
 	if len(state.bullets) == 0 || len(state.asteroids) == 0 {
 		return
 	}
-	// TODO: Need to efficiently check for bullet-asteroid collisions since
-	// this could be a performance bottleneck as it runs every frame.
+
+	for i := len(state.bullets) - 1; i >= 0; i-- {
+		for j := len(state.asteroids) - 1; j >= 0; j-- {
+			// Check if the bullet collides with an asteroid
+			if rl.CheckCollisionCircles(
+				state.bullets[i].Start, // Bullet tip
+				2,                      // Small radius for the bullet
+				state.asteroids[j].Pos, // Asteroid center
+				float32(state.asteroids[j].Hitbox),
+			) {
+				// Increase score
+				state.Score += state.asteroids[j].Score
+
+				// Decrement the asteroid health and remove it if it's health is 0.
+				state.asteroids[j].Health -= 1
+				if state.asteroids[j].Health <= 0 {
+					state.asteroids = append(state.asteroids[:j], state.asteroids[j+1:]...)
+				}
+
+				// Remove the bullet from the game.
+				state.bullets = append(state.bullets[:i], state.bullets[i+1:]...)
+
+				// A bullet can only destroy one asteroid at a time.
+				break
+			}
+		}
+	}
 }
 
 func update(state *GameState) {
