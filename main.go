@@ -29,6 +29,7 @@ type GameState struct {
 	bulletTimer   float32
 	lives         uint8
 	isGameOver    bool
+	Score         uint64
 }
 
 func NewGameState() GameState {
@@ -40,6 +41,7 @@ func NewGameState() GameState {
 		bulletTimer:   0,
 		lives:         3,
 		isGameOver:    false,
+		Score:         0,
 	}
 }
 
@@ -59,6 +61,10 @@ func render(state *GameState) {
 			rl.RayWhite,
 		)
 	}
+
+	// Renders the score in the top left of the window.
+	scoreStr := fmt.Sprintf("Score: %d", state.Score)
+	rl.DrawText(scoreStr, 16, 20, 30, rl.RayWhite)
 
 	// If the ship is moving forward, then we draw thrusters onto the ship
 	// for the effect.
@@ -126,10 +132,8 @@ func updateAsteroidPositions(state *GameState) {
 			// If the asteroid moves out of the window dimensions, we remove it
 			// from the game.
 			if state.asteroids[i].Pos.X > SCREEN_WIDTH+entities.SPAWN_MARGIN ||
-				state.asteroids[i].Pos.X < -entities.SPAWN_MARGIN {
-				state.asteroids = append(state.asteroids[:i], state.asteroids[i+1:]...)
-			}
-			if state.asteroids[i].Pos.Y > SCREEN_HEIGHT+entities.SPAWN_MARGIN ||
+				state.asteroids[i].Pos.X < -entities.SPAWN_MARGIN ||
+				state.asteroids[i].Pos.Y > SCREEN_HEIGHT+entities.SPAWN_MARGIN ||
 				state.asteroids[i].Pos.Y < -entities.SPAWN_MARGIN {
 				state.asteroids = append(state.asteroids[:i], state.asteroids[i+1:]...)
 			}
@@ -174,10 +178,8 @@ func updateBulletPositions(state *GameState) {
 		// Remove any bullets that go out of bounds.
 		for i := len(state.bullets) - 1; i >= 0; i-- {
 			if state.bullets[i].Start.X > SCREEN_WIDTH+entities.SPAWN_MARGIN ||
-				state.bullets[i].Start.X < -entities.SPAWN_MARGIN {
-				state.bullets = append(state.bullets[:i], state.bullets[i+1:]...)
-			}
-			if state.bullets[i].Start.Y > SCREEN_HEIGHT+entities.SPAWN_MARGIN ||
+				state.bullets[i].Start.X < -entities.SPAWN_MARGIN ||
+				state.bullets[i].Start.Y > SCREEN_HEIGHT+entities.SPAWN_MARGIN ||
 				state.bullets[i].Start.Y < -entities.SPAWN_MARGIN {
 				state.bullets = append(state.bullets[:i], state.bullets[i+1:]...)
 			}
@@ -185,22 +187,12 @@ func updateBulletPositions(state *GameState) {
 	}
 }
 
-// Check for collisions between the bullets and asteroids.
 func checkForBulletAsteroidCollisions(state *GameState) {
-	for j := len(state.bullets) - 1; j >= 0; j-- {
-		for i := len(state.asteroids) - 1; i >= 0; i-- {
-			if rl.CheckCollisionCircleLine(
-				state.asteroids[i].Pos,
-				float32(state.asteroids[i].Hitbox),
-				state.bullets[j].Start,
-				state.bullets[j].End,
-			) {
-				state.asteroids = append(state.asteroids[:i], state.asteroids[i+1:]...)
-				// FIX: Bug here where there can be a crash from accessing an invalid index.
-				state.bullets = append(state.bullets[:j], state.bullets[j+1:]...)
-			}
-		}
+	if len(state.bullets) == 0 || len(state.asteroids) == 0 {
+		return
 	}
+	// TODO: Need to efficiently check for bullet-asteroid collisions since
+	// this could be a performance bottleneck as it runs every frame.
 }
 
 func update(state *GameState) {

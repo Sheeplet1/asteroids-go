@@ -25,7 +25,7 @@ func NewBullet(pos rl.Vector2, rotation float32) Bullet {
 	return Bullet{
 		Start: pos,
 		End:   rl.Vector2Add(pos, rl.Vector2Scale(direction, constants.BULLET_LENGTH)),
-		Vel:   rl.Vector2{X: 2, Y: 2},
+		Vel:   rl.Vector2{X: 4, Y: 4},
 		Dir:   direction,
 	}
 }
