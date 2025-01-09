@@ -115,6 +115,7 @@ func newAsteroid(pos rl.Vector2, dir rl.Vector2, size AsteroidSize) Asteroid {
 		Hitbox: hitbox,
 		Health: health,
 		Score:  score,
+		Size:   size,
 	}
 }
 
@@ -164,16 +165,19 @@ func DrawAsteroid(asteroid Asteroid) {
 // Spawns an asteroid and returns the Asteroid struct to be appended into the
 // game state. Takes in the ship's position as the asteroid drifts towards
 // the ship when it spawns.
-func SpawnAsteroid(shipPos rl.Vector2) Asteroid {
+func SpawnAsteroid(shipPos rl.Vector2, size AsteroidSize) Asteroid {
 	spawnPoint := generateAsteroidSpawn()
 
-	// Randomly generate a size for the asteroid.
+	// Randomly generate a size for the asteroid. This will only happen if no size
+	// is given.
 	// 40% chance for large, 40% chance for medium, 20% chance for small.
-	size := Large
-	if rand.Float64() < 0.4 {
-		size = Medium
-	} else if rand.Float64() < 0.2 {
-		size = Small
+	if size == -1 {
+		size = Large
+		if rand.Float64() < 0.4 {
+			size = Medium
+		} else if rand.Float64() < 0.2 {
+			size = Small
+		}
 	}
 
 	asteroid := newAsteroid(
@@ -183,4 +187,27 @@ func SpawnAsteroid(shipPos rl.Vector2) Asteroid {
 	)
 
 	return asteroid
+}
+
+func SplitAsteroid(asteroid Asteroid) []Asteroid {
+	switch asteroid.Size {
+	case Large:
+		// Create two medium asteroids when a large asteroid is destroyed.
+		mediumAsteroids := []Asteroid{
+			// Asteroids will float in a random direction.
+			newAsteroid(asteroid.Pos, rl.Vector2{X: rand.Float32(), Y: rand.Float32()}, Medium),
+			newAsteroid(asteroid.Pos, rl.Vector2{X: rand.Float32(), Y: rand.Float32()}, Medium),
+		}
+		return mediumAsteroids
+	case Medium:
+		// Create two small asteroids when a medium asteroid is destroyed.
+		// Asteroids will float in a random direction.
+		smallAsteroids := []Asteroid{
+			newAsteroid(asteroid.Pos, rl.Vector2{X: rand.Float32(), Y: rand.Float32()}, Small),
+			newAsteroid(asteroid.Pos, rl.Vector2{X: rand.Float32(), Y: rand.Float32()}, Small),
+		}
+		return smallAsteroids
+	default:
+		return []Asteroid{}
+	}
 }

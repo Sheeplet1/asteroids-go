@@ -91,7 +91,7 @@ func render(state *GameState) {
 	// ------------------------------------------------------------------------
 	if state.asteroidTimer >= ASTEROID_SPAWN_INTERVAL {
 		// Creating a new asteroid to spawn in.
-		asteroid := entities.SpawnAsteroid(state.ship.Pos)
+		asteroid := entities.SpawnAsteroid(state.ship.Pos, -1)
 
 		// Add new asteroid into the game state.
 		state.asteroids = append(state.asteroids, asteroid)
@@ -209,6 +209,18 @@ func checkForBulletAsteroidCollisions(state *GameState) {
 				// Decrement the asteroid health and remove it if it's health is 0.
 				state.asteroids[j].Health -= 1
 				if state.asteroids[j].Health <= 0 {
+					if state.asteroids[j].Size == entities.Large {
+						// Create two medium asteroids when a large asteroid is destroyed.
+						mediumAsteroids := entities.SplitAsteroid(state.asteroids[j])
+						state.asteroids = append(state.asteroids, mediumAsteroids...)
+					} else if state.asteroids[j].Size == entities.Medium {
+						// Create two small asteroids when a medium asteroid is destroyed.
+						// Asteroids will float in a random direction.
+						smallAsteroids := entities.SplitAsteroid(state.asteroids[j])
+						state.asteroids = append(state.asteroids, smallAsteroids...)
+					}
+
+					// Remove this asteroid from the game.
 					state.asteroids = append(state.asteroids[:j], state.asteroids[j+1:]...)
 				}
 

@@ -12,11 +12,11 @@ const (
 	SHIP_HITBOX_RADIUS = 15
 
 	// Ship movement constants
-	ROTATION_SPEED = 0.08
-	ACCEL          = 0.15
+	ROTATION_SPEED = 0.05
+	ACCEL          = 0.10
 	DECEL          = 0.01
 	MIN_VEL        = 2.0
-	MAX_VEL        = 6.0
+	MAX_VEL        = 5.0
 	DRAG           = 0.01
 )
 
